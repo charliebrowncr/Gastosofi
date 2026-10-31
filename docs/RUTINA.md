@@ -18,3 +18,18 @@ Tampoco se suben facturas (PDF) a este repositorio.
 
 Scripts de referencia (`scripts/`): `extraer_adjuntos.py` -> `leer_facturas.py` -> `generar_reporte.py`.
 Usar `/usr/bin/python3` (tiene openpyxl y reportlab).
+
+## Reglas de guardado (actualizado)
+
+- Cada factura nueva se guarda en Drive en la carpeta del MES DE SU FECHA DE EMISION (no la fecha de hoy):
+  - Octubre: `Facturas Octubre` (id 1b6a_THjWMSwjlJJSKU2erovRS3hXyNLy)
+  - Noviembre: `Facturas Noviembre` (id 1IwSc2GzhS_XNV-4tHPZdnShIjWJM16ud)
+  - Otro mes: crear `Facturas <Mes>` en Mi unidad.
+  - Nombre del archivo: `AAAA-MM-DD_Proveedor_Numero.pdf`. Verificar el tamaño después de subir.
+- Cada factura nueva se agrega como una fila en el libro de Google
+  `Canavida Gastos Ingresos Oficial - Octubre (facturas llenadas)` (id 1tjn9HNQOPJhUCz92T-N6jikCVdWXVKTPvPOzFQITS_w),
+  hoja `Gastos Diarios`, en la primera fila vacía después de los datos.
+  - La fecha de la fila debe ser la fecha de emisión de la factura.
+  - Monto en USD; si la factura es en colones se divide entre 459 (tipo de cambio usado por Canavida desde el 10/10/2026).
+  - La categoría debe ser una de la hoja `Listas`; si hay duda se marca "Revisar categoría" en la columna H.
+  - No duplicar facturas ya registradas (buscar el número en la columna G).
