@@ -1,0 +1,151 @@
+[
+ {
+  "fecha": "2026-11-11",
+  "tipo": "Factura",
+  "num": "00100001010000000180",
+  "prov": "Moncavel",
+  "crc": 293800.0,
+  "cat": "Mantenimiento y reparaciones",
+  "metodo": "Transferencia / SINPE",
+  "desc": "Acarreo de agregados: arena fina 12 m3",
+  "neto": 293800.0,
+  "usd": 640.09,
+  "files": [
+   "facturas/2026-11/2026-11-11_Moncavel_00000180.pdf"
+  ],
+  "fila": 142
+ },
+ {
+  "fecha": "2026-11-11",
+  "tipo": "Factura",
+  "num": "00100001010000125196",
+  "prov": "Grupo Materiales",
+  "crc": 346642.47,
+  "cat": "Mantenimiento y reparaciones",
+  "metodo": "Tarjeta",
+  "desc": "Madera 1x12x4 vrs formaleta y tornillos gypsum (Materiales La Costa)",
+  "neto": 346642.47,
+  "usd": 755.21,
+  "files": [
+   "facturas/2026-11/2026-11-11_Grupo-Materiales_00125196.pdf"
+  ],
+  "fila": 141
+ },
+ {
+  "fecha": "2026-11-11",
+  "tipo": "Factura",
+  "num": "01600002010000151817",
+  "prov": "Coopeagri",
+  "crc": 39915.5,
+  "cat": "Jardinería y piscinas",
+  "metodo": "Tarjeta",
+  "desc": "Insecticida Allister Skipper 1 L",
+  "nota": "Revisar categoría",
+  "neto": 39915.5,
+  "usd": 86.96,
+  "files": [
+   "facturas/2026-11/2026-11-11_Coopeagri_00151817.pdf"
+  ],
+  "fila": 138
+ },
+ {
+  "fecha": "2026-11-11",
+  "tipo": "Factura",
+  "num": "00400027011000026995",
+  "prov": "Sur Quimica",
+  "crc": 147655.52,
+  "cat": "Muebleria",
+  "metodo": "Tarjeta",
+  "desc": "Tintes Duro Tint, acabado brillante, componente B poliuretano, diluyente",
+  "neto": 147655.52,
+  "usd": 321.69,
+  "files": [
+   "facturas/2026-11/2026-11-11_Sur-Quimica_00026995.pdf"
+  ],
+  "fila": 143
+ },
+ {
+  "fecha": "2026-11-11",
+  "tipo": "Factura",
+  "num": "04400002010000148952",
+  "prov": "Colono",
+  "crc": 19648.74,
+  "cat": "Mantenimiento y reparaciones",
+  "metodo": "Transferencia / SINPE",
+  "desc": "Aceite cadena, WD-40, tornillos gypsum, almohada (El Colono La Jungla)",
+  "nota": "Venta a crédito: revisar método de pago",
+  "neto": 19648.74,
+  "usd": 42.81,
+  "files": [
+   "facturas/2026-11/2026-11-11_Colono_00148952.pdf"
+  ],
+  "fila": 137
+ },
+ {
+  "fecha": "2026-11-11",
+  "tipo": "Factura",
+  "num": "00200003010000278351",
+  "prov": "Fixsur",
+  "crc": 8900.11,
+  "cat": "Mantenimiento y reparaciones",
+  "metodo": "Efectivo",
+  "desc": "Tiradera cilíndrica negra",
+  "neto": 8900.11,
+  "usd": 19.39,
+  "files": [
+   "facturas/2026-11/2026-11-11_Fixsur_00278351.pdf"
+  ],
+  "fila": 139
+ },
+ {
+  "fecha": "2026-11-11",
+  "tipo": "Factura - NC",
+  "num": "00200003010000278347",
+  "prov": "Fixsur",
+  "crc": 189562.23,
+  "ajuste_crc": 48150.07,
+  "cat": "Mantenimiento y reparaciones",
+  "metodo": "Transferencia / SINPE",
+  "desc": "Ferretería: disco sierra DeWalt, cordón eléctrico, bisagras, clavos, broca, interruptor y otros; menos NC 00014235 (plástico p/empaletizar)",
+  "nota": "Neto: factura ₡189,562.23 − NC ₡48,150.07",
+  "neto": 141412.16,
+  "usd": 308.09,
+  "files": [
+   "facturas/2026-11/2026-11-11_Fixsur_00278347.pdf",
+   "facturas/2026-11/2026-11-11_Fixsur_00278347_NC.pdf"
+  ],
+  "fila": 140
+ },
+ {
+  "fecha": "2026-11-11",
+  "tipo": "Factura",
+  "num": "00100001010000020845",
+  "prov": "Bazar y Libreria Rivera",
+  "crc": 15900.0,
+  "cat": "Suministros y amenities",
+  "metodo": "Efectivo",
+  "desc": "Cartulina dúplex y cuaderno",
+  "neto": 15900.0,
+  "usd": 34.64,
+  "files": [
+   "facturas/2026-11/2026-11-11_Bazar-y-Libreria-Rivera_00020845.pdf"
+  ],
+  "fila": 136
+ },
+ {
+  "fecha": "2026-11-11",
+  "tipo": "Factura",
+  "num": "00100001010000263252",
+  "prov": "BM de Uvita",
+  "crc": 25107.0,
+  "cat": "Alimentos y bebidas",
+  "metodo": "Tarjeta",
+  "desc": "Supermercado: snacks, vino, yogurt, pan, frutas, lavaplatos",
+  "neto": 25107.0,
+  "usd": 54.7,
+  "files": [
+   "facturas/2026-11/2026-11-11_BM-de-Uvita_00263252.pdf"
+  ],
+  "fila": 135
+ }
+]
