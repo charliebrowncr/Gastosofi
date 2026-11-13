@@ -10,8 +10,7 @@
   "nota": "Método de pago por confirmar; emitida antes del 5/10, fuera del periodo del libro",
   "corrida": "s0ltln",
   "pdf": "facturas/2026-09/2026-09-17_Ana_Lorena_Ramirez_Castro_FE60.pdf",
-  "crc": 62148.6,
-  "fila": 135
+  "crc": 62148.6
  },
  {
   "fecha": "2026-09-25",
@@ -24,8 +23,7 @@
   "nota": "Método de pago por confirmar; emitida antes del 5/10, fuera del periodo del libro",
   "corrida": "s0ltln",
   "pdf": "facturas/2026-09/2026-09-25_Ana_Lorena_Ramirez_Castro_FE61.pdf",
-  "crc": 158097.96,
-  "fila": 136
+  "crc": 158097.96
  },
  {
   "fecha": "2026-10-07",
@@ -38,8 +36,7 @@
   "nota": "Método de pago por confirmar",
   "corrida": "s0ltln",
   "pdf": "facturas/2026-10/2026-10-07_Ana_Lorena_Ramirez_Castro_FE65.pdf",
-  "crc": 231648.12,
-  "fila": 137
+  "crc": 231648.12
  },
  {
   "fecha": "2026-10-14",
@@ -52,8 +49,7 @@
   "nota": "Método de pago por confirmar",
   "corrida": "s0ltln",
   "pdf": "facturas/2026-10/2026-10-14_Ana_Lorena_Ramirez_Castro_FE67.pdf",
-  "crc": 209813.49,
-  "fila": 138
+  "crc": 209813.49
  },
  {
   "fecha": "2026-11-04",
@@ -66,8 +62,7 @@
   "nota": "Método de pago por confirmar",
   "corrida": "s0ltln",
   "pdf": "facturas/2026-11/2026-11-04_Ferretería_Palmares_FE29998.pdf",
-  "crc": 294948.81,
-  "fila": 139
+  "crc": 294948.81
  },
  {
   "fecha": "2026-11-04",
@@ -80,8 +75,7 @@
   "nota": "Método de pago por confirmar",
   "corrida": "s0ltln",
   "pdf": "facturas/2026-11/2026-11-04_Ferretería_Palmares_NC446.pdf",
-  "crc": -277997.94,
-  "fila": 140
+  "crc": -277997.94
  },
  {
   "fecha": "2026-11-04",
@@ -94,8 +88,7 @@
   "corrida": "w9702b",
   "usd": 965.0,
   "pdf": "facturas/2026-11/2026-11-04_LifeProjectEducation_Fact-125.pdf",
-  "crc": 442935.0,
-  "fila": 141
+  "crc": 442935.0
  },
  {
   "fecha": "2026-11-04",
@@ -108,8 +101,7 @@
   "nota": "Método de pago por confirmar",
   "corrida": "s0ltln",
   "pdf": "facturas/2026-11/2026-11-04_Materiales_La_Costa._FE124878.pdf",
-  "crc": 280237.86,
-  "fila": 142
+  "crc": 280237.86
  },
  {
   "fecha": "2026-11-05",
@@ -122,8 +114,7 @@
   "corrida": "w9702b",
   "usd": 97.37,
   "pdf": "facturas/2026-11/2026-11-05_BM-Uvita_Fact-262456.pdf",
-  "crc": 44692.83,
-  "fila": 143
+  "crc": 44692.83
  },
  {
   "fecha": "2026-11-05",
@@ -136,8 +127,7 @@
   "corrida": "w9702b",
   "usd": 332.41,
   "pdf": "facturas/2026-11/2026-11-05_Coopeagri_Fact-2414.pdf",
-  "crc": 152576.19,
-  "fila": 144
+  "crc": 152576.19
  },
  {
   "fecha": "2026-11-05",
@@ -150,8 +140,7 @@
   "corrida": "w9702b",
   "usd": 336.43,
   "pdf": "facturas/2026-11/2026-11-05_Petrogas-3101622925_Fact-11100.pdf",
-  "crc": 154421.37,
-  "fila": 145
+  "crc": 154421.37
  },
  {
   "fecha": "2026-11-06",
@@ -165,8 +154,7 @@
   "crc": 70582.0,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-06_SupermercadosUnidos_26505.pdf",
-  "usd": 153.77,
-  "fila": 146
+  "usd": 153.77
  },
  {
   "fecha": "2026-11-06",
@@ -180,8 +168,7 @@
   "crc": 14716.0,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-06_SupermercadosUnidos_26506.pdf",
-  "usd": 32.06,
-  "fila": 147
+  "usd": 32.06
  },
  {
   "fecha": "2026-11-07",
@@ -195,8 +182,7 @@
   "crc": 43409.75,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-07_BMUvita_00100001010000262737.pdf",
-  "usd": 94.57,
-  "fila": 148
+  "usd": 94.57
  },
  {
   "fecha": "2026-11-07",
@@ -210,8 +196,7 @@
   "crc": 23394.0,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-07_GRU-Zavillana_00100031010000709532.pdf",
-  "usd": 50.97,
-  "fila": 149
+  "usd": 50.97
  },
  {
   "fecha": "2026-11-09",
@@ -225,8 +210,7 @@
   "crc": 94800.17,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-09_BM-de-Uvita_00100001010000262958.pdf",
-  "usd": 206.54,
-  "fila": 150
+  "usd": 206.54
  },
  {
   "fecha": "2026-11-09",
@@ -240,8 +224,7 @@
   "crc": 64868.5,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-09_BM-de-Uvita_00100001010000263038.pdf",
-  "usd": 141.33,
-  "fila": 151
+  "usd": 141.33
  },
  {
   "fecha": "2026-11-09",
@@ -255,8 +238,7 @@
   "crc": 344650.0,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-09_clean-vita-cr_3204.pdf",
-  "usd": 750.87,
-  "fila": 152
+  "usd": 750.87
  },
  {
   "fecha": "2026-11-09",
@@ -270,8 +252,7 @@
   "crc": 92793.42,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-09_el-colono-la-jungla_0148887.pdf",
-  "usd": 202.16,
-  "fila": 153
+  "usd": 202.16
  },
  {
   "fecha": "2026-11-09",
@@ -285,8 +266,7 @@
   "crc": 69395.0,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-09_frutas-y-verduras-generaleñas_1219.pdf",
-  "usd": 151.19,
-  "fila": 154
+  "usd": 151.19
  },
  {
   "fecha": "2026-11-09",
@@ -300,8 +280,7 @@
   "crc": 12780.0,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-09_supermercados-unidos_10332.pdf",
-  "usd": 27.84,
-  "fila": 155
+  "usd": 27.84
  },
  {
   "fecha": "2026-11-11",
@@ -315,8 +294,7 @@
   "crc": 25107.0,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-11_BM-de-Uvita_00263252.pdf",
-  "usd": 54.7,
-  "fila": 156
+  "usd": 54.7
  },
  {
   "fecha": "2026-11-11",
@@ -330,8 +308,7 @@
   "crc": 15900.0,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-11_Bazar-y-Libreria-Rivera_00020845.pdf",
-  "usd": 34.64,
-  "fila": 157
+  "usd": 34.64
  },
  {
   "fecha": "2026-11-11",
@@ -345,8 +322,7 @@
   "crc": 19648.74,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-11_Colono_00148952.pdf",
-  "usd": 42.81,
-  "fila": 158
+  "usd": 42.81
  },
  {
   "fecha": "2026-11-11",
@@ -360,8 +336,7 @@
   "crc": 39915.5,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-11_Coopeagri_00151817.pdf",
-  "usd": 86.96,
-  "fila": 159
+  "usd": 86.96
  },
  {
   "fecha": "2026-11-11",
@@ -375,8 +350,7 @@
   "crc": 8900.11,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-11_Fixsur_00278351.pdf",
-  "usd": 19.39,
-  "fila": 160
+  "usd": 19.39
  },
  {
   "fecha": "2026-11-11",
@@ -390,8 +364,7 @@
   "crc": 141412.16,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-11_Fixsur_00278347.pdf",
-  "usd": 308.09,
-  "fila": 161
+  "usd": 308.09
  },
  {
   "fecha": "2026-11-11",
@@ -405,8 +378,7 @@
   "crc": 346642.47,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-11_Grupo-Materiales_00125196.pdf",
-  "usd": 755.21,
-  "fila": 162
+  "usd": 755.21
  },
  {
   "fecha": "2026-11-11",
@@ -420,8 +392,7 @@
   "crc": 293800.0,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-11_Moncavel_00000180.pdf",
-  "usd": 640.09,
-  "fila": 163
+  "usd": 640.09
  },
  {
   "fecha": "2026-11-11",
@@ -435,7 +406,36 @@
   "crc": 147655.52,
   "src": "crc",
   "pdf": "facturas/2026-11/2026-11-11_Sur-Quimica_00026995.pdf",
-  "usd": 321.69,
-  "fila": 164
+  "usd": 321.69
+ },
+ {
+  "fecha": "2026-11-12",
+  "cat": "Mantenimiento y reparaciones",
+  "desc": "Asientos de inodoro Elon Neo/Owen (3), tornillos plásticos para asiento (3), aloe vera",
+  "prov": "Colono",
+  "metodo": "Transferencia / SINPE",
+  "ref": "Fact. 00148992",
+  "nota": "Venta a crédito (vence 12/12/2026): revisar método de pago",
+  "corrida": "k8xu91",
+  "crc": 23871.94,
+  "src": "crc",
+  "pdf": "facturas/2026-11/2026-11-12_Colono_00148992.pdf",
+  "usd": 52.01,
+  "fila": 165
+ },
+ {
+  "fecha": "2026-11-12",
+  "cat": "Software y tecnología",
+  "desc": "Reparación celular: pantalla LCD iPhone XR + mano de obra (boleta 8521)",
+  "prov": "Tecno Soluciones H",
+  "metodo": "Efectivo",
+  "ref": "Fact. 00001735",
+  "nota": "Medio de pago 01 (efectivo) según XML: anotar también en Caja Efectivo",
+  "corrida": "k8xu91",
+  "crc": 35000.0,
+  "src": "crc",
+  "pdf": "facturas/2026-11/2026-11-12_Tecno-Soluciones-H_00001735.pdf",
+  "usd": 76.25,
+  "fila": 166
  }
 ]

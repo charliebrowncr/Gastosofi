@@ -22,6 +22,7 @@ for x in regs:
     if "crc" in x: x["usd"] = round(x["crc"] / TC, 2)
     else: x["crc"] = round(x["usd"] * TC, 2)
 regs.sort(key=lambda v: (v["fecha"], v["prov"]))
+nuevos = [x for x in regs if x.get("corrida") == (sys.argv[4] if len(sys.argv) > 4 else None)]
 
 # 1) Libro oficial: filas en Gastos Diarios (sin duplicar por N° factura)
 wb = openpyxl.load_workbook(XLSX); ws = wb["Gastos Diarios"]
@@ -84,7 +85,7 @@ nov = mes.get(hoy[:7], [0, 0, 0])
 pdf = f"reportes/resumen_facturas_{hoy}.pdf"
 SimpleDocTemplate(pdf, pagesize=landscape(A4), leftMargin=24, rightMargin=24, topMargin=24, bottomMargin=24).build([
     Paragraph(f"Canavida · Actualización de facturas {fd}", st["Title"]),
-    Paragraph(f"<b>Hoy: 0 facturas PDF nuevas</b> (último PDF recibido: 11/11/2026). Acumulado {hoy[:7]} en el repositorio: "
+    Paragraph(f"<b>Hoy: {len(nuevos)} facturas PDF nuevas</b>" + (f" ({', '.join(x['prov'] + ' ' + x['ref'] for x in nuevos)}: ₡{fm(sum(x['crc'] for x in nuevos))} ≈ US${fm(sum(x['usd'] for x in nuevos))})" if nuevos else "") + f". Acumulado {hoy[:7]} en el repositorio: "
               f"{nov[0]} documentos · ₡{fm(nov[1])} ≈ US${fm(nov[2])} (TC ₡{TC}). PDF guardados en facturas/AAAA-MM por mes de emisión; "
               f"filas registradas en la hoja 'Gastos Diarios' del libro oficial.", st["Normal"]),
     Spacer(1, 4), Paragraph(sys.argv[3] if len(sys.argv) > 3 else "", st["Normal"]),
