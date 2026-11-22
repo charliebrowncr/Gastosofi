@@ -15,6 +15,7 @@ Uso:
       [--previo ANTERIOR.xlsx] [--tc 459] [--fecha 2026-11-22]
 """
 import argparse
+import hashlib
 import datetime as dt
 import json
 import os
@@ -33,7 +34,7 @@ MESES = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Ag
          "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 CAMPOS = ["clave", "messageId", "archivo", "fecha", "proveedor", "cedula", "numero",
           "descripcion", "categoria", "metodo", "moneda", "monto_original", "tc",
-          "monto_usd", "tipo", "estado", "notas", "fecha_correo", "asunto", "procesado"]
+          "monto_usd", "tipo", "estado", "notas", "fecha_correo", "asunto", "procesado", "sha"]
 
 CATEGORIAS_KW = [
     ("Servicios públicos e internet", ["ice", "instituto costarricense de electricidad", "kolbi", "telefon", "internet", "cnfl", "acueducto", "asada", "coopeguanacaste", "coopealfaro"]),
@@ -239,6 +240,7 @@ def leer_registro(path):
 
 def procesar_inbox(inbox, registro, hist, manuales, tc_default, hoy):
     vistos = {r["clave"] for r in registro if r.get("clave")} | {f'{r["messageId"]}/{r["archivo"]}' for r in registro}
+    vistos |= {r["sha"] for r in registro if r.get("sha")}
     nuevos = []
     for mid in sorted(os.listdir(inbox)):
         d = os.path.join(inbox, mid)
@@ -251,6 +253,9 @@ def procesar_inbox(inbox, registro, hist, manuales, tc_default, hoy):
         xmls = [parse_xml(os.path.join(d, f)) for f in files if f.lower().endswith(".xml")]
         xmls = [x for x in xmls if x]
         for pdf in pdfs:
+            sha = hashlib.sha256(open(os.path.join(d, pdf), "rb").read()).hexdigest()
+            if sha in vistos:
+                continue
             pinfo = parse_pdf(os.path.join(d, pdf), meta)
             # Asociar XML por clave (o el único XML del correo)
             x = None
@@ -303,6 +308,8 @@ def procesar_inbox(inbox, registro, hist, manuales, tc_default, hoy):
                 "fecha_correo": (meta.get("date") or "")[:10], "asunto": meta.get("subject"),
                 "procesado": hoy,
             })
+            nuevos[-1]["sha"] = sha
+            vistos.add(sha)
             if clave:
                 vistos.add(clave)
             vistos.add(key)
