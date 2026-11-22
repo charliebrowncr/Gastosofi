@@ -22,7 +22,8 @@ Cada día, el agente programado:
    Requiere `openpyxl`, `reportlab` y `pdftotext`/`pdfunite`/`pdfinfo` (poppler).
 4. **Envía** a la cuenta de administración un correo con:
    - `Canavida Reporte Facturas AAAA-MM-DD.pdf`: resumen por mes y categoría, facturas nuevas,
-     detalle por mes y, anexadas al final, las facturas PDF nuevas ordenadas por fecha.
+     detalle por mes y, anexadas al final, las facturas PDF nuevas ordenadas por fecha
+     (solo si todo cabe en 9 MB; el conector de Gmail no admite adjuntos de más de 10 MB).
    - `Canavida Facturas AAAA-MM-DD.xlsx`: la plantilla oficial con
      - una hoja **"Facturas <Mes> <Año>"** por mes (mismas columnas que *Gastos Diarios* + moneda, monto original,
        tipo de cambio, tipo, estado y nombre del PDF);

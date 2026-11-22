@@ -530,7 +530,7 @@ def construir_pdf(registro, nuevos, resumen, salida_pdf, hoy):
     doc.build(el)
 
 
-def anexar_facturas(pdf_reporte, nuevos, pdf_dir):
+def anexar_facturas(pdf_reporte, nuevos, pdf_dir, limite_mb=9):
     """Agrega al reporte las facturas PDF nuevas, ordenadas por mes y fecha (usa pdfunite de poppler)."""
     rutas = []
     for r in sorted(nuevos, key=lambda r: (r["fecha"], r["proveedor"] or "")):
@@ -542,12 +542,16 @@ def anexar_facturas(pdf_reporte, nuevos, pdf_dir):
             rutas.append(ruta)
         else:
             print("No se pudo anexar", ruta)
-    if not rutas:
-        return
+    # El conector de Gmail admite adjuntos de hasta 10 MB: anexar solo si cabe
+    if not rutas or os.path.getsize(pdf_reporte) + sum(os.path.getsize(r) for r in rutas) > limite_mb * 1024 * 1024:
+        if rutas:
+            print(f"Facturas no anexadas: superan {limite_mb} MB")
+        return False
     tmp = pdf_reporte + ".tmp.pdf"
     res = subprocess.run(["pdfunite", pdf_reporte, *rutas, tmp], capture_output=True, text=True)
     if res.returncode == 0 and os.path.getsize(tmp) > 0:
         os.replace(tmp, pdf_reporte)
+        return True
     else:
         print("pdfunite falló:", res.stderr[-500:])
         if os.path.exists(tmp):
@@ -585,8 +589,8 @@ def main():
     pdf = os.path.join(a.salida, f"Canavida Reporte Facturas {a.fecha}.pdf")
     resumen = construir_excel(a.plantilla, registro, xlsx, a.fecha)
     construir_pdf(registro, nuevos, resumen, pdf, a.fecha)
-    anexar_facturas(pdf, nuevos, pdf_dir)
-    json.dump({"nuevos": nuevos, "total_registro": len(registro), "xlsx": xlsx, "pdf": pdf},
+    anexadas = anexar_facturas(pdf, nuevos, pdf_dir)
+    json.dump({"anexadas": bool(anexadas), "nuevos": nuevos, "total_registro": len(registro), "xlsx": xlsx, "pdf": pdf},
               open(os.path.join(a.salida, "resultado.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
     print(f"registro={len(registro)} nuevos={len(nuevos)} xlsx={xlsx} pdf={pdf}")
 
