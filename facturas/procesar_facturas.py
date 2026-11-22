@@ -34,17 +34,17 @@ MESES = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Ag
          "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 CAMPOS = ["clave", "messageId", "archivo", "fecha", "proveedor", "cedula", "numero",
           "descripcion", "categoria", "metodo", "moneda", "monto_original", "tc",
-          "monto_usd", "tipo", "estado", "notas", "fecha_correo", "asunto", "procesado", "sha"]
+          "monto_usd", "tipo", "estado", "notas", "fecha_correo", "asunto", "procesado", "sha", "con_xml"]
 
 CATEGORIAS_KW = [
-    ("Servicios públicos e internet", ["ice", "instituto costarricense de electricidad", "kolbi", "telefon", "internet", "cnfl", "acueducto", "asada", "coopeguanacaste", "coopealfaro"]),
-    ("Combustible y transporte", ["gasolin", "servicentro", "combustible", "coopeagri", "estacion de servicio", "gs ", "uno ", "delta", "taxi"]),
+    ("Combustible y transporte", ["gasolin", "servicentro", "combustible", "coopeagri", "estacion de servicio", "taxi"]),
+    ("Servicios públicos e internet", ["ice ", "inst. costarricense de electricidad", "instituto costarricense de electricidad", "costarricense de electricidad", "kolbi", "telefon", "internet", "cnfl", "acueducto", "asada", "direccion de agua", "canon", "wireless"]),
     ("Mantenimiento y reparaciones", ["ferreter", "material", "construc", "coopemadereros", "electric", "colono", "epa", "repuesto", "taller", "plomer", "pintura", "sur quimica"]),
     ("Alimentos y bebidas", ["supermerc", "super ", "automercado", "mas x menos", "maxi pali", "pali", "walmart", "fruta", "verdura", "carniceria", "panaderia", "restaurante", "rest.", "bm de uvita", "bm supermercado", "soda", "licorera", "spirits"]),
     ("Limpieza y lavandería", ["lavander", "limpieza", "cleaner", "natural center"]),
     ("Suministros y amenities", ["pequeño mundo", "pequeno mundo", "ekono", "libreria", "bazar", "gas", "amenit"]),
     ("Jardinería y piscinas", ["piscina", "jardin", "vivero", "agro", "cloro"]),
-    ("Software y tecnología", ["software", "smart506", "pricelabs", "breezeway", "wireless", "computo", "tecnolog", "quo"]),
+    ("Software y tecnología", ["software", "smart506", "pricelabs", "dynamic pricing", "breezeway", "computo", "tecnolog", "quo", "invoice-"]),
     ("Comisiones de plataformas", ["booking", "airbnb", "expedia", "lodgify"]),
     ("Seguros", ["seguro", "ins ", "instituto nacional de seguros"]),
     ("Impuestos y patentes", ["municipalidad", "hacienda", "patente", "impuesto"]),
@@ -133,6 +133,9 @@ def pdf_text(path):
 NUM = r"([0-9]{1,3}(?:[.,][0-9]{3})*(?:[.,][0-9]{1,2})|[0-9]+(?:[.,][0-9]{1,2})?)"
 
 
+NUM_TOTAL = r"(?<![\d.,])(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{2})?|\d{1,7}[.,]\d{2})(?![\d])"
+
+
 def to_float(s):
     s = s.strip()
     if re.search(r",\d{1,2}$", s) and "." in s:  # 1.234,56
@@ -162,20 +165,30 @@ def parse_pdf(path, meta):
         if m:
             info["fecha"] = f"{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
     totals = []
-    for line in t.splitlines():
+    lines = t.splitlines()
+    moneda_total = None
+    for i, line in enumerate(lines):
         l = norm(line)
         if re.search(r"total\s*(comprobante|factura|a pagar|general|due|amount)?\b", l) and not re.search(r"sub\s*total|total\s*(impuesto|iva|descuento|gravad|exent|exoner|servicio|mercanc|venta)", l):
-            nums = [to_float(x) for x in re.findall(NUM, line)]
+            nums = [to_float(x) for x in re.findall(NUM_TOTAL, line)]
             nums = [n for n in nums if n]
             if nums:
                 totals.append(nums[-1])
+                ctx = " ".join(lines[i:i + 3])
+                if re.search(r"USD|US\$|\$", ctx):
+                    moneda_total = "USD"
+                elif re.search(r"₡|¢|\bCRC\b", ctx):
+                    moneda_total = "CRC"
     if totals:
         info["total"] = totals[-1]
     tl = t.lower()
-    colones = "₡" in t or re.search(r"\bcrc\b|colones", tl)
+    colones = "₡" in t or "¢" in t or re.search(r"\bcrc\b|colones", tl)
     dolares = "$" in t or re.search(r"\busd\b|d[oó]lar", tl)
-    info["moneda"] = "USD" if dolares and not colones else "CRC"
-    first = next((ln.strip() for ln in t.splitlines() if ln.strip()), "")
+    info["moneda"] = moneda_total or ("USD" if dolares and not colones else "CRC")
+    if re.search(r"PLEASE PAY|TOTAL DUE", t) and re.search(r"\bUSD\s*[\d,]+\.\d{2}", t):
+        info["moneda"] = "USD"
+    genericas = re.compile(r"^(invoice|factura|receipt|recibo|comprobante|page|pagina|fecha|date)\b", re.I)
+    first = next((ln.strip() for ln in t.splitlines() if ln.strip() and not genericas.match(ln.strip())), "")
     info["proveedor"] = re.split(r"\s{2,}|\|", first)[0][:80] if first else None
     return info
 
@@ -200,11 +213,11 @@ def historial_proveedores(ws):
 def categorizar(proveedor, descripcion, hist):
     p = norm(proveedor)
     for k, c in hist.items():
-        if k and len(k) >= 3 and (k in p or p.startswith(k) or (p and p in k)):
+        if k and len(k) >= 3 and k not in ("canavida", "sin factura") and (re.search(r"\b" + re.escape(k) + r"\b", p) or (len(p) >= 4 and p in k)):
             return c.most_common(1)[0][0]
     blob = f" {p} {norm(descripcion)} "
     for cat, kws in CATEGORIAS_KW:
-        if any(kw in blob for kw in kws):
+        if any(re.search(r"\b" + re.escape(norm(kw).strip()), blob) for kw in kws):
             return cat
     return "Imprevistos y otros"
 
@@ -238,7 +251,7 @@ def leer_registro(path):
     return [dict(zip(head, r)) for r in rows[1:] if any(v is not None for v in r)]
 
 
-def procesar_inbox(inbox, registro, hist, manuales, tc_default, hoy):
+def procesar_inbox(inbox, registro, hist, manuales, tc_default, hoy, nombres_hist=()):
     vistos = {r["clave"] for r in registro if r.get("clave")} | {f'{r["messageId"]}/{r["archivo"]}' for r in registro}
     vistos |= {r["sha"] for r in registro if r.get("sha")}
     nuevos = []
@@ -259,8 +272,12 @@ def procesar_inbox(inbox, registro, hist, manuales, tc_default, hoy):
             pinfo = parse_pdf(os.path.join(d, pdf), meta)
             # Asociar XML por clave (o el único XML del correo)
             x = None
+            compacto = pinfo["texto"].replace(" ", "")
             for cand in xmls:
                 if cand["clave"] and (cand["clave"] in pdf or cand["clave"] == pinfo.get("clave")):
+                    x = cand
+                    break
+                if cand["numero"] and (cand["numero"] in pdf or cand["numero"] in compacto):
                     x = cand
             if x is None and len(xmls) == 1 and len(pdfs) == 1:
                 x = xmls[0]
@@ -269,7 +286,15 @@ def procesar_inbox(inbox, registro, hist, manuales, tc_default, hoy):
             if (clave and clave in vistos) or key in vistos:
                 continue
             fecha = (x or {}).get("fecha") or pinfo.get("fecha") or (meta.get("date") or "")[:10]
-            proveedor = (x or {}).get("comercial") or (x or {}).get("proveedor") or guess_proveedor_asunto(meta.get("subject")) or pinfo.get("proveedor")
+            proveedor = (x or {}).get("comercial") or (x or {}).get("proveedor")
+            if not proveedor:
+                tn = norm(pinfo["texto"])
+                proveedor = next((nombre for nombre in nombres_hist if len(norm(nombre)) >= 3 and norm(nombre) not in ("canavida", "sin factura")
+                                  and re.search(r"\b" + re.escape(norm(nombre)) + r"\b", tn)), None)
+            if not proveedor:
+                asunto = guess_proveedor_asunto(meta.get("subject"))
+                proveedor = pinfo.get("proveedor") if len(asunto or "") < 6 else asunto
+                proveedor = proveedor or asunto
             moneda = (x or {}).get("moneda") or pinfo.get("moneda") or "CRC"
             total = (x or {}).get("total") if x else pinfo.get("total")
             if moneda == "USD":
@@ -282,18 +307,20 @@ def procesar_inbox(inbox, registro, hist, manuales, tc_default, hoy):
             subj = norm(meta.get("subject"))
             if es_emitida_por_canavida((x or {}).get("proveedor") or "") or (not x and re.search(r"factura no\.\d+ - (cr )?canavida", subj)):
                 tipo = "Emitida por Canavida (ingreso)"
-            elif "pre-factura" in subj or "proforma" in subj or "cotizacion" in subj:
+            elif re.search(r"pre-?\s?factura|proforma|cotizacion", subj + " " + norm(pinfo["texto"][:300])):
                 tipo = "Pre-factura / cotización"
             elif (x or {}).get("tipo_doc") == "NotaCreditoElectronica":
                 tipo = "Nota de crédito"
             else:
                 tipo = "Gasto"
             notas = []
+            if not x and not clave and (total is None or re.search(r"contrato|cont_serv|convenio|check-in|guest messages|reservaci|clave kolbi", norm(pdf + " " + pinfo["texto"][:400]))):
+                tipo = "Otro documento (no factura)"
             corto = str(int(numero[-10:])) if numero and numero[-10:].isdigit() else None
             estado = "Nuevo"
             if corto and corto in manuales:
                 estado = "Posible duplicado (ya en Gastos Diarios)"
-            if total is None:
+            if total is None and tipo != "Otro documento (no factura)":
                 estado = "Revisar monto"
                 notas.append("No se pudo leer el total del PDF")
             if not x:
@@ -306,13 +333,29 @@ def procesar_inbox(inbox, registro, hist, manuales, tc_default, hoy):
                 "metodo": (x or {}).get("metodo", ""), "moneda": moneda, "monto_original": total,
                 "tc": tc, "monto_usd": usd, "tipo": tipo, "estado": estado, "notas": "; ".join(notas),
                 "fecha_correo": (meta.get("date") or "")[:10], "asunto": meta.get("subject"),
-                "procesado": hoy,
+                "procesado": hoy, "con_xml": bool(x),
             })
             nuevos[-1]["sha"] = sha
             vistos.add(sha)
             if clave:
                 vistos.add(clave)
             vistos.add(key)
+    # PDF sin XML con el mismo monto que otra factura cercana: copia, recibo de pago o reenvío
+    todos = registro + nuevos
+    for r in nuevos:
+        if r.get("con_xml") or r["monto_original"] is None or r["tipo"] != "Gasto":
+            continue
+        f = dt.date.fromisoformat(r["fecha"])
+        for o in todos:
+            if o is r or o["monto_original"] is None or o["tipo"] not in ("Gasto", "Nota de crédito"):
+                continue
+            if o["estado"].startswith("Posible duplicado (copia"):
+                continue
+            if abs(float(o["monto_original"]) - float(r["monto_original"])) < 0.01 and o["moneda"] == r["moneda"] \
+                    and abs((dt.date.fromisoformat(o["fecha"]) - f).days) <= 20 and (o.get("con_xml") or todos.index(o) < todos.index(r)):
+                r["estado"] = "Posible duplicado (copia o recibo de otra factura)"
+                r["notas"] = (r["notas"] + "; " if r["notas"] else "") + f'Mismo monto que {o["proveedor"]} {o["fecha"]}'
+                break
     return nuevos
 
 
@@ -399,11 +442,11 @@ def construir_excel(plantilla, registro, salida_xlsx, hoy):
             if fill:
                 for c in range(1, len(cols) + 1):
                     ws.cell(i, c).fill = fill
-            if r["tipo"] == "Gasto" and r["monto_usd"]:
+            if r["tipo"] == "Gasto" and r["monto_usd"] and not r["estado"].startswith("Posible duplicado"):
                 resumen[ym][r["categoria"]] += r["monto_usd"]
         n = len(rows) + 4
         ws.cell(n + 2, 5, "TOTAL GASTOS (USD)").font = Font(bold=True)
-        ws.cell(n + 2, 6, f'=SUMIFS(F5:F{n},K5:K{n},"Gasto")').number_format = '#,##0.00'
+        ws.cell(n + 2, 6, f'=SUMIFS(F5:F{n},K5:K{n},"Gasto",L5:L{n},"<>Posible duplicado*")').number_format = '#,##0.00'
         ws.cell(n + 2, 6).font = Font(bold=True)
         for c, w in enumerate([12, 26, 50, 32, 20, 14, 22, 8, 16, 10, 26, 30, 50, 34], 1):
             ws.column_dimensions[get_column_letter(c)].width = w
@@ -454,7 +497,7 @@ def construir_pdf(registro, nuevos, resumen, salida_pdf, hoy):
     meses = sorted(resumen)
     cats = sorted({c for m in meses for c in resumen[m]})
     if meses:
-        el.append(Paragraph("Gastos por mes y categoría (USD, solo facturas tipo Gasto)", st["Heading2"]))
+        el.append(Paragraph("Gastos por mes y categoría (USD; solo facturas de gasto, sin posibles duplicados)", st["Heading2"]))
         data = [["Categoría"] + [mes_de(m + "-01")[1] for m in meses] + ["Total"]]
         for c in cats:
             vals = [resumen[m].get(c, 0) for m in meses]
@@ -479,11 +522,36 @@ def construir_pdf(registro, nuevos, resumen, salida_pdf, hoy):
                          Paragraph(r["estado"] + (f" – {r['notas']}" if r["notas"] else ""), small)])
         el.append(tabla(data, [2.1 * cm, 6 * cm, 2.6 * cm, 4.2 * cm, 1.4 * cm, 2.6 * cm, 2.1 * cm, 4.6 * cm]))
 
-    lista(f"Facturas nuevas en esta actualización ({len(nuevos)})", nuevos)
+    if len(nuevos) < len(registro):
+        lista(f"Facturas nuevas en esta actualización ({len(nuevos)})", nuevos)
     el.append(PageBreak())
     for m in sorted({r["fecha"][:7] for r in registro}):
         lista(f"Todas las facturas – {mes_de(m + '-01')[1]}", [r for r in registro if r["fecha"][:7] == m])
     doc.build(el)
+
+
+def anexar_facturas(pdf_reporte, nuevos, pdf_dir):
+    """Agrega al reporte las facturas PDF nuevas, ordenadas por mes y fecha (usa pdfunite de poppler)."""
+    rutas = []
+    for r in sorted(nuevos, key=lambda r: (r["fecha"], r["proveedor"] or "")):
+        if r["tipo"] == "Otro documento (no factura)":
+            continue
+        ruta = os.path.join(pdf_dir, mes_de(r["fecha"])[0], nombre_archivo(r))
+        # pdfunite falla con PDFs dañados: validar uno por uno
+        if subprocess.run(["pdfinfo", ruta], capture_output=True).returncode == 0:
+            rutas.append(ruta)
+        else:
+            print("No se pudo anexar", ruta)
+    if not rutas:
+        return
+    tmp = pdf_reporte + ".tmp.pdf"
+    res = subprocess.run(["pdfunite", pdf_reporte, *rutas, tmp], capture_output=True, text=True)
+    if res.returncode == 0 and os.path.getsize(tmp) > 0:
+        os.replace(tmp, pdf_reporte)
+    else:
+        print("pdfunite falló:", res.stderr[-500:])
+        if os.path.exists(tmp):
+            os.remove(tmp)
 
 
 def main():
@@ -501,7 +569,8 @@ def main():
     hist = historial_proveedores(plant["Gastos Diarios"])
     manuales = facturas_manuales(plant["Gastos Diarios"])
     registro = leer_registro(a.previo)
-    nuevos = procesar_inbox(a.inbox, registro, hist, manuales, a.tc, a.fecha)
+    nombres = sorted({r[3] for r in plant["Gastos Diarios"].iter_rows(min_row=6, values_only=True) if r[3]}, key=len, reverse=True)
+    nuevos = procesar_inbox(a.inbox, registro, hist, manuales, a.tc, a.fecha, nombres)
     registro = registro + nuevos
 
     # PDFs organizados por mes
@@ -516,6 +585,7 @@ def main():
     pdf = os.path.join(a.salida, f"Canavida Reporte Facturas {a.fecha}.pdf")
     resumen = construir_excel(a.plantilla, registro, xlsx, a.fecha)
     construir_pdf(registro, nuevos, resumen, pdf, a.fecha)
+    anexar_facturas(pdf, nuevos, pdf_dir)
     json.dump({"nuevos": nuevos, "total_registro": len(registro), "xlsx": xlsx, "pdf": pdf},
               open(os.path.join(a.salida, "resultado.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
     print(f"registro={len(registro)} nuevos={len(nuevos)} xlsx={xlsx} pdf={pdf}")
