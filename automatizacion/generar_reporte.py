@@ -57,8 +57,6 @@ def cargar(resultados):
             r = json.loads(line)
             if not r.get("es_factura"):
                 continue
-            if re.search(r"no sumar|duplicad", r.get("notas") or "", re.I):
-                continue  # copia de una factura ya registrada
             k = clave_unica(r)
             if k not in regs:  # el mismo PDF puede llegar en varios correos
                 regs[k] = r
