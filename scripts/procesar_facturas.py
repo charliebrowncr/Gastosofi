@@ -15,7 +15,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 import openpyxl
-import pdfplumber
+import pypdfium2 as pdfium
 
 ROOT = Path(__file__).resolve().parent.parent
 INBOX = ROOT / "_inbox"
@@ -35,6 +35,9 @@ FIELDS = ["message_id", "clave", "consecutivo", "tipo_doc", "fecha", "mes", "pro
 
 # palabra clave (en proveedor / nombre comercial / detalle) -> categoría de la hoja Listas
 REGLAS = [
+    (r"\bice\b|instituto costarricense de electricidad|inst\.? +costarricense de elec|kolbi|telefon|internet|wireless|liberty|claro|movistar|cnfl|acueducto|\baya\b|direccion de agua|dirección de agua", "Servicios públicos e internet"),
+    (r"pricelabs|\bquo\b|breezeway|lodgify|smart506", "Software y tecnología"),
+    (r"ferreter|materiales|colono|madera|coopemadereros|construc|electricista|plomer|pintur|fixsur|moncavel", "Mantenimiento y reparaciones"),
     (r"supermercado|maxi ?pal|pali|walmart|bm |\bbm\b|mas x menos|frutas|verdura|carnice|panader|abastecedor|mini ?super", "Alimentos y bebidas"),
     (r"restaur|rest\.|soda|burrito|pizz|cafe|caf[eé]|bar |hornito|mariscos|fogata|sushi|taco", "Alimentos y bebidas"),
     (r"ferreter|material|colono|madera|coopemadereros|construc|el[eé]ctric|plomer|pintur|sur quimica", "Mantenimiento y reparaciones"),
@@ -136,8 +139,9 @@ def to_float(s):
 def parse_pdf(p):
     """Respaldo cuando no viene XML: extrae fecha, total y emisor del texto del PDF."""
     try:
-        with pdfplumber.open(p) as pdf:
-            text = "\n".join((pg.extract_text() or "") for pg in pdf.pages[:3])
+        pdf = pdfium.PdfDocument(str(p))
+        text = "\n".join(pdf[i].get_textpage().get_text_range() for i in range(min(3, len(pdf))))
+        pdf.close()
     except Exception:
         return None
     out = {"texto": text}
@@ -153,7 +157,14 @@ def parse_pdf(p):
         except ValueError:
             pass
     out["total"] = max(vals) if vals else None
-    out["moneda"] = "USD" if re.search(r"(?i)\bUSD\b|d[oó]lar|US\$", text) and not re.search(r"₡|CRC|colon", text) else "CRC"
+    if re.search(r"(?i)moneda:?\s*(CRC|colon)|₡|¢", text):
+        out["moneda"] = "CRC"
+    elif re.search(r"(?i)moneda:?\s*(USD|d[oó]lar)|\bUSD\b|US\$", text):
+        out["moneda"] = "USD"
+    elif re.search(r"(?i)\b(receipt|payment|subscription|invoice|billed)\b", text):
+        out["moneda"] = "USD?"
+    else:
+        out["moneda"] = "CRC?"
     fechas = re.findall(r"\b(\d{1,2})[/-](\d{1,2})[/-](20\d{2})\b", text) or []
     iso = re.findall(r"\b(20\d{2})-(\d{2})-(\d{2})\b", text)
     f = None
@@ -173,10 +184,12 @@ def parse_pdf(p):
 
 
 def categoria_y_desc(prov, comercial, detalle, hist):
-    key = norm(f"{prov} {comercial}").lower()
-    for hp, (cat, desc) in hist.items():
-        if hp and (hp in key or key[:12] in hp):
-            return cat, desc, False
+    key = f" {re.sub(r'[^a-z0-9 ]', ' ', norm(f'{prov} {comercial}').lower())} "
+    key = re.sub(r"\s+", " ", key)
+    hits = [hp for hp in hist if len(hp) >= 5 and f" {hp} " in key]
+    if hits:
+        cat, desc = hist[max(hits, key=len)]
+        return cat, desc, False
     blob = norm(f"{prov} {comercial} {' '.join(detalle[:5])}").lower()
     for pat, cat in REGLAS:
         if re.search(pat, blob):
@@ -190,17 +203,17 @@ def historial(ws):
     for r in range(6, ws.max_row + 1):
         prov, cat, desc = ws.cell(r, 4).value, ws.cell(r, 2).value, ws.cell(r, 3).value
         if prov and cat and len(norm(str(prov))) >= 4 and str(prov) not in ("Sin Factura", "Canavida"):
-            h[norm(str(prov)).lower()] = (cat, desc)
+            k = re.sub(r"\s+", " ", re.sub(r"[^a-z0-9 ]", " ", norm(str(prov)).lower())).strip()
+            h[k] = (cat, desc)
     return h
 
 
 def existentes(ws):
-    s = set()
-    for r in range(6, ws.max_row + 1):
-        g = ws.cell(r, 7).value
-        if isinstance(g, (int, float)):
-            s.add(int(g))
-    return s
+    """(fecha, monto USD, nº factura) de los gastos ya cargados a mano."""
+    out = []
+    for x in leer_hoja_manual():
+        out.append((x["fecha"], x["monto_usd"], x["factura"]))
+    return out
 
 
 def load_ledger():
@@ -245,6 +258,12 @@ def procesar_inbox(ledger, hist, ya_en_hoja, hoy):
                              "nombre_comercial": "", "cedula_emisor": "", "detalle": [],
                              "moneda": info.get("moneda", "CRC"), "tipo_cambio_doc": 1.0,
                              "total": info.get("total"), "medio_pago": "", "_pdf": p, "_texto": info.get("texto", "")})
+                d_ = docs[-1]
+                if d_["moneda"].endswith("?"):
+                    d_["moneda"] = d_["moneda"][:-1]
+                    d_["_nota"] = f"Moneda no indicada en el PDF, se asumió {d_['moneda']}"
+                if any(o is not d_ and o["total"] == d_["total"] and o["fecha"] == d_["fecha"] for o in docs):
+                    docs.pop()  # mismo recibo en dos PDFs del mismo correo
         for i, doc in enumerate(docs):
             pdf = doc.pop("_pdf", None) or (next((p for p in pdfs if doc["clave"] and doc["clave"] in p.name), None)
                                             or pdfs[min(i, len(pdfs) - 1)])
@@ -253,8 +272,11 @@ def procesar_inbox(ledger, hist, ya_en_hoja, hoy):
                        clave=doc["clave"], consecutivo=doc["consecutivo"], tipo_doc=doc["tipo_doc"],
                        fecha=doc["fecha"], proveedor=doc["proveedor"], nombre_comercial=doc["nombre_comercial"],
                        cedula_emisor=doc["cedula_emisor"], moneda=doc["moneda"])
-            notas = []
-            if doc["cedula_emisor"] == CANAVIDA_ID:
+            notas = [doc.pop("_nota")] if "_nota" in doc else []
+            subj = (meta.get("subject") or "").lower()
+            if doc["tipo_doc"] == "PDF" and ("pre-factura" in subj or "prefactura" in subj or "proforma" in subj):
+                row.update(estado="revisar", notas="Pre-factura/proforma: no es comprobante final")
+            elif doc["cedula_emisor"] == CANAVIDA_ID:
                 row.update(estado="emitida_por_canavida", notas="Factura emitida por Canavida (ingreso, no gasto)")
             elif doc["clave"] and doc["clave"] in vistas_claves:
                 row.update(estado="duplicada", notas="Misma clave que otra factura ya registrada")
@@ -290,8 +312,15 @@ def procesar_inbox(ledger, hist, ya_en_hoja, hoy):
                 notas.append("Fecha fuera del periodo de la hoja")
                 if row["estado"] == "registrada":
                     row["estado"] = "fuera_periodo"
-            cons_int = int(doc["consecutivo"][-10:]) if doc["consecutivo"][-10:].isdigit() else None
-            if row["estado"] == "registrada" and cons_int and cons_int in ya_en_hoja and f and f <= date(2026, 10, 31):
+            cons = str(int(doc["consecutivo"][-10:])) if doc["consecutivo"][-10:].isdigit() else ""
+            def en_hoja():
+                for fh, usdh, gh in ya_en_hoja:
+                    if abs(usdh - usd) >= 1:
+                        continue
+                    if (gh and cons and cons.endswith(str(gh))) or fh == row["fecha"]:
+                        return True
+                return False
+            if row["estado"] == "registrada" and f and f <= date(2026, 10, 31) and en_hoja():
                 row["estado"] = "ya_en_hoja"
                 notas.append("Nº de factura ya aparece en la hoja")
             row["mes"] = f.strftime("%Y-%m") if f else "sin-fecha"
@@ -350,7 +379,9 @@ def leer_hoja_manual():
             if not re.fullmatch(r"[0-9.+\-*/() ]+", expr):
                 continue
             f = eval(expr, {"__builtins__": {}})
-        out.append({"fecha": a.date().isoformat(), "categoria": b, "monto_usd": float(f)})
+        g = ws.cell(i, 7).value
+        out.append({"fecha": a.date().isoformat(), "categoria": b, "monto_usd": float(f),
+                    "factura": int(g) if isinstance(g, (int, float)) else None})
     return out
 
 
@@ -372,7 +403,7 @@ def escribir_pdf(ledger, nuevas, manual, out, hoy):
                      ("VALIGN", (0, 0), (-1, -1), "TOP")])
     reg = [x for x in ledger if x["estado"] == "registrada"]
     el = [Paragraph("Canavida Villas &amp; Resort — Reporte diario de facturas", ss["Title"]),
-          Paragraph(f"Generado el {hoy} · Facturas PDF extraídas del correo · Montos en USD (₡ a {TIPO_CAMBIO:g})", ss["Normal"]),
+          Paragraph(f"Generado el {hoy} · Facturas PDF extraídas del correo · Montos en USD (tipo de cambio CRC {TIPO_CAMBIO:g} por dólar)", ss["Normal"]),
           Spacer(1, 8)]
 
     # Resumen por mes (manual + automático)

@@ -1,2 +1,5 @@
 _inbox/
 __pycache__/
+data/
+facturas/
+reportes/
