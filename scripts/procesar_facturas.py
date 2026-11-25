@@ -25,6 +25,7 @@ REP_DIR = ROOT / "reportes"
 TEMPLATE = ROOT / "Copy of Canavida Gastos Ingresos Oficial (2).xlsx"
 CANAVIDA_ID = "3102777726"
 TIPO_CAMBIO = 459.0  # ₡ por $ (el mismo que usa la hoja desde mediados de octubre)
+BASE_PREVIA = False  # True cuando se parte del Excel enviado el día anterior (--base)
 FECHA_MIN, FECHA_MAX = date(2026, 10, 1), date(2026, 12, 31)
 MESES = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto",
          "Septiembre", "Octubre", "Noviembre", "Diciembre"]
@@ -254,7 +255,7 @@ def procesar_inbox(ledger, hist, ya_en_hoja, hoy):
                 subj = meta.get("subject", "")
                 docs.append({"clave": info.get("clave", ""), "consecutivo": info.get("consecutivo", ""),
                              "tipo_doc": "PDF", "fecha": info.get("fecha") or (meta.get("date") or "")[:10],
-                             "proveedor": re.sub(r"^(RV|RE|FW|Fwd):\s*", "", subj, flags=re.I)[:60] or p.stem,
+                             "proveedor": meta.get("proveedor") or re.sub(r"^(RV|RE|FW|Fwd):\s*", "", subj, flags=re.I)[:60] or p.stem,
                              "nombre_comercial": "", "cedula_emisor": "", "detalle": [],
                              "moneda": info.get("moneda", "CRC"), "tipo_cambio_doc": 1.0,
                              "total": info.get("total"), "medio_pago": "", "_pdf": p, "_texto": info.get("texto", "")})
@@ -320,7 +321,7 @@ def procesar_inbox(ledger, hist, ya_en_hoja, hoy):
                     if (gh and cons and cons.endswith(str(gh))) or fh == row["fecha"]:
                         return True
                 return False
-            if row["estado"] == "registrada" and f and f <= date(2026, 10, 31) and en_hoja():
+            if row["estado"] == "registrada" and f and (BASE_PREVIA or f <= date(2026, 10, 31)) and en_hoja():
                 row["estado"] = "ya_en_hoja"
                 notas.append("Nº de factura ya aparece en la hoja")
             row["mes"] = f.strftime("%Y-%m") if f else "sin-fecha"
@@ -470,7 +471,13 @@ def escribir_pdf(ledger, nuevas, manual, out, hoy):
 
 
 def main():
-    hoy = sys.argv[1] if len(sys.argv) > 1 else date.today().isoformat()
+    global TEMPLATE, BASE_PREVIA
+    args = sys.argv[1:]
+    if "--base" in args:  # continuar sobre el Excel del reporte anterior (el contenedor no guarda data/)
+        i = args.index("--base")
+        TEMPLATE, BASE_PREVIA = Path(args[i + 1]).resolve(), True
+        del args[i:i + 2]
+    hoy = args[0] if args else date.today().isoformat()
     wb = openpyxl.load_workbook(TEMPLATE)
     ws = wb["Gastos Diarios"]
     ledger = load_ledger()

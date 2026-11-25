@@ -7,7 +7,9 @@ Cada corrida programada sigue estos pasos.
 2. **Descartar** los IDs de mensaje que ya están en la columna `message_id` de `data/facturas.csv`.
 3. **Descargar** de cada mensaje nuevo sus adjuntos `.pdf` y los `.xml` de la factura (no los de respuesta de Hacienda) en
    `_inbox/<message_id>/`, junto con un `meta.json` (`id`, `date`, `subject`, `body`).
-4. **Procesar** con `python3 scripts/procesar_facturas.py AAAA-MM-DD`. El script:
+4. **Procesar** con `python3 scripts/procesar_facturas.py --base data/base.xlsx AAAA-MM-DD`, donde `data/base.xlsx` es el Excel
+   adjunto en el reporte del día anterior (descargarlo de Gmail). Así se conservan las filas "Auto Gmail" previas aunque el
+   contenedor no guarde `data/`. Si la factura viene solo en PDF, se puede poner `"proveedor"` en `meta.json`. El script:
    - lee el XML de Hacienda, o el texto del PDF si no hay XML;
    - asigna la categoría según los registros que ya están en la hoja y unas reglas por palabra clave;
    - convierte los montos en colones a dólares con 459 (`TIPO_CAMBIO`);
