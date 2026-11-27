@@ -3,7 +3,8 @@
 Cada corrida programada sigue estos pasos.
 
 1. **Buscar** en Gmail (cuenta admicanavida@gmail.com, conector Gmail; no se usan contraseñas) con
-   `filename:pdf after:<fecha de ayer> -in:sent`.
+   `filename:pdf after:<fecha de ayer> -in:sent`. Si un día no se envió reporte, usar como `after:` la fecha del último
+   reporte de facturas enviado (`in:sent subject:facturas`) para no perder las facturas de los días sin corrida.
 2. **Descartar** los IDs de mensaje que ya están en la columna `message_id` de `data/facturas.csv`.
 3. **Descargar** de cada mensaje nuevo sus adjuntos `.pdf` y los `.xml` de la factura (no los de respuesta de Hacienda) en
    `_inbox/<message_id>/`, junto con un `meta.json` (`id`, `date`, `subject`, `body`).
